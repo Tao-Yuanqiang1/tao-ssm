@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.rjxy.model.Address">
+
+	<!-- 用户添加地址 -->
+	<insert id="add" parameterType="com.rjxy.model.Address">
+		<!-- 添加数据的时候立即返回主键 -->
+		<selectKey keyProperty="id" resultType="int" order="AFTER">
+			select LAST_INSERT_ID()
+		</selectKey>
+		insert into 
+			t_address
+		(
+			address_base,
+			address_place,
+			address_name,
+			address_phone,
+			address_status,
+			user_id
+		)
+		values
+		(
+			#{base},
+			#{place},
+			#{name},
+			#{phone},
+			#{status},
+			#{user.id}
+		)
+	</insert>
+	
+	<!-- 删除地址 -->
+	<delete id="delete" parameterType="int">
+		delete from t_address where address_is=#{id}
+	</delete>
+	
+	<!-- 修改地址 -->
+	<update id="update" parameterType="com.rjxy.model.Address" >
+		update
+			t_address
+		set
+			address_base=#{base},
+			address_place=#{place},
+			address_name=#{name},
+			address_phone=#{phone},
+			address_status=#{status}
+		where
+			address_id=#{id}
+	</update>
+	
+	<!-- 用户查询一个地址 -->
+	<select id="load" parameterType="int" resultMap="addressMap">
+		select * from t_address where address_id=#{id}
+	</select>
+	
+	<!-- 用户查询自己的所有地址 -->
+	<select id="listByUser" parameterType="int" resultMap="addressMap">
+		select * from t_address where user_id=#{uid}
+	</select>
+	
+	<resultMap type="com.rjxy.model.Address" id="addressMap">
+		<id property="id" column="address_id" />
+		<result property="base" column="address_base" />
+		<result property="place" column="address_place" />
+		<result property="name" column="address_name" />
+		<result property="phone" column="address_phone" />
+		<result property="status" column="address_status" />
+		<association property="user" column="user_id"
+			javaType="com.rjxy.model.User" resultMap="userMap"></association>
+	</resultMap>
+	<resultMap type="com.rjxy.model.User" id="userMap">
+		<id property="id" column="user_id" />
+		<result property="username" column="user_username" />
+		<result property="password" column="user_password" />
+		<result property="phone" column="user_phone" />
+		<result property="email" column="email" />
+	</resultMap>
+	
+</mapper>

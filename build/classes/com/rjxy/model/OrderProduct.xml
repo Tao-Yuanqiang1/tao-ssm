@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.rjxy.model.OrderProduct">
+
+	<!-- 添加一个订单和商品的关系 -->
+	<insert id="add" parameterType="com.rjxy.model.OrderProduct">
+		insert into
+			t_order_product
+		(
+			product_quantity,
+			product_id,
+			order_id
+		)
+		values
+		(
+			#{quantity},
+			#{product.id},
+			#{order.id}
+		)
+	</insert>
+
+	<resultMap type="com.rjxy.model.OrderProduct"
+		id="orderProductMap">
+		<id property="id" column="order_product_id" />
+		<result property="quantity" column="product_quantity" />
+
+		<!-- 多对一关系,对产品 -->
+		<association property="product" column="product_id"
+			resultMap="productMap">
+		</association>
+
+		<!-- 多对一关系,对订单 -->
+		<association property="order" column="order_id"
+			resultMap="orderMap">
+		</association>
+	</resultMap>
+
+	<resultMap type="com.rjxy.model.Product" id="productMap">
+		<id property="id" column="product_id" />
+		<result property="name" column="product_name" />
+		<result property="price" column="product_price" />
+		<result property="sales" column="product_sales" />
+		<result property="inventory" column="product_inventory" />
+		<result property="describe" column="product_describe" />
+		<result property="discount" column="product_discount" />
+		<result property="status" column="product_status" />
+	</resultMap>
+
+	<resultMap type="com.rjxy.model.Order" id="orderMap">
+		<id property="id" column="order_id" />
+		<result property="price" column="order_price" />
+		<result property="status" column="order_status" />
+		<result property="isdel" column="order_isdel" />
+		<result property="datetime" column="order_datetime" />
+	</resultMap>
+</mapper>

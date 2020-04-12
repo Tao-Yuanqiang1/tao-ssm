@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.rjxy.model.Admin">
+	
+	<!-- 添加管理员 -->
+	<insert id="add" parameterType="int">
+		insert into
+			t_address
+		(
+			admin_username,
+			admin_password,
+			admin_nickname,
+			admin_role
+		)
+		values
+		(
+			#{username},
+			#{password},
+			#{nickname},
+			#{role}
+		)
+	</insert>
+	
+	<!-- 删除管理员 -->
+	<delete id="delete" parameterType="int">
+		delete from t_admin where admin_id=#{id}
+	</delete>
+	
+	<!-- 修改管理员 -->
+	<update id="update" parameterType="com.rjxy.model.Admin">
+		update
+			t_admin
+		set
+			admin_password=#{password},
+			admin_nickname=#{nickname},
+			admin_role=#{role}
+		where
+			admin_id=#{id}
+	</update>
+	
+	<!-- 查询一个管理员 -->
+	<select id="load" parameterType="int" resultMap="adminMap">
+		select * from t_admin where admin_id=#{id}
+	</select>
+	
+	<!-- 查询所有管理员 -->
+	<select id="list" resultMap="adminMap">
+		select * from t_admin
+	</select>
+	
+	<!-- 管理员登录(根据用户名查询出其信息，判断密码是否正确在service里面) -->
+	<select id="login" parameterType="String" resultMap="adminMap">
+		select *
+		from t_admin where admin_username=#{username}
+	</select>
+	
+	<resultMap type="com.rjxy.model.Admin" id="adminMap">
+		<id property="id" column="admin_id" />
+		<result property="username" column="admin_username" />
+		<result property="password" column="admin_password" />
+		<result property="nickname" column="admin_nickname" />
+		<result property="role" column="admin_role" />
+	</resultMap>
+	
+</mapper>

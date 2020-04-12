@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.rjxy.model.User">
+
+	<!-- 用户注册 -->
+	<insert id="add" parameterType="com.rjxy.model.User">
+		insert into
+			t_user
+		(
+			user_username,
+			user_password,
+			user_phone,
+			user_email
+		)
+		values
+		(
+			#{username},
+			#{password},
+			#{phone},
+			#{email}
+		)
+	</insert>
+	
+	<!-- 删除一个用户 -->
+	<delete id="delete"></delete>
+	
+	<!-- 更新用户的余额 -->
+	<update id="updateBalance" parameterType="com.rjxy.model.User">
+		update t_user
+		set
+			user_balance=#{balance}
+		where
+			user_id=#{id}
+	</update>
+	
+	<!-- 用户登录时：邮箱、用户名、电话都可作为用户名进行登录，但密码必须正确 -->
+	<select id="login" parameterType="String" resultMap="userMap">
+		select * from t_user
+		where user_username=#{username} or user_email=#{username} and user_phone=#{username}
+	</select>
+	
+	<!-- 查询全部的用户 -->
+	<select id="list"></select>
+
+	<resultMap type="com.rjxy.model.User" id="userMap">
+		<id property="id" column="user_id" />
+		<result property="username" column="user_username" />
+		<result property="password" column="user_password" />
+		<result property="phone" column="user_phone" />
+		<result property="email" column="user_email" />
+		<result property="balance" column="user_balance" />
+
+		<!-- 一对多 （用户对地址） -->
+		<collection property="address"
+			ofType="com.rjxy.model.Address">
+			<id property="id" column="address_id" />
+			<result property="base" column="address_base" />
+			<result property="place" column="address_place" />
+			<result property="name" column="address_name" />
+			<result property="phone" column="address_" />
+			<result property="status" column="address_status" />
+		</collection>
+
+		<!-- 一对多（用户对订单） -->
+		<collection property="orders" ofType="com.rjxy.model.Order">
+			<id property="id" column="order_id" />
+			<result property="price" column="order_price" />
+			<result property="status" column="order_status" />
+			<result property="isdel" column="order_isdel" />
+			<result property="datetime" column="order_datetime" />
+		</collection>
+
+		<!-- 一对多（用户对购物车） -->
+		<collection property="carts" ofType="com.rjxy.model.Cart">
+			<id property="id" column="cart_id" />
+			<result property="quantity" column="product_quantity" />
+			<result property="date" column="cart_date" />
+		</collection>
+	</resultMap>
+	
+</mapper>

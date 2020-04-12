@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+        https://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/tx
+        https://www.springframework.org/schema/tx/spring-tx.xsd">
+	<!-- 开启Spring注解 -->
+	<context:annotation-config></context:annotation-config>
+	<!-- 到哪些包下扫描注解 -->
+	<context:component-scan base-package="com.rjxy"></context:component-scan>
+
+	<!-- 1.创建数据源 -->
+	<bean id="dataSource"
+		class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<!-- 加载数据库驱动 -->
+		<property name="driverClass" value="com.mysql.jdbc.Driver"></property>
+		<!-- 数据库连接字符串 -->
+		<property name="jdbcUrl"
+			value="jdbc:mysql://localhost:3306/shopping?characterEncoding=utf-8"></property>
+		<!-- 数据库用户名 -->
+		<property name="user" value="root"></property>
+		<!-- 数据库密码 -->
+		<property name="password" value="123456"></property>
+	</bean>
+	
+	<!-- 2.创建sqlSessionFactory -->
+	<bean id="sqlSessionFactory"
+		class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!-- 注入数据源 -->
+		<property name="dataSource" ref="dataSource"></property>
+		<!-- 扫描所有的Mapper文件 -->
+		<property name="mapperLocations"
+			value="classpath:com/rjxy/model/*.xml"></property>
+		<!-- 扫描所有的模型类(实体类) -->
+		<property name="typeAliasesPackage" value="com.rjxy.model"></property>
+	</bean>
+	
+	<!-- 3.创建事务管理器 -->
+	<bean id="txManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<!-- 注入数据源 -->
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+	
+	<!-- 4.通过切面编程处理事务 -->
+	<!-- 配置事务属性,引入事务管理器 -->
+	<tx:advice id="txAdvice" transaction-manager="txManager">
+		<tx:attributes>
+			<!-- 增删改等操作需要加入事务,查询操作不需要加入事务 -->
+			<!-- 以add、delete、update等开头的操作加入事务 -->
+			<tx:method name="add*" propagation="REQUIRED" />
+			<tx:method name="delete*" propagation="REQUIRED" />
+			<tx:method name="update*" propagation="REQUIRED" />
+			<!-- 其他操作不加事务,设置为只读 -->
+			<tx:method name="*" propagation="SUPPORTS" read-only="true" />
+		</tx:attributes>
+	</tx:advice>
+	
+	<!-- 处理事务 -->
+	<aop:config>
+		<!-- 定义切入点 -->
+		<!-- 第一个星号表示方法的任意返回值,第二个星号表示包下的任意类, 第三个星号表示类中的任意方法,(..)表示方法的任意参数 -->
+		<aop:pointcut
+			expression="execution(* com.rjxy.dao.impl.*.*(..))" id="allMethods" />
+		<!-- 关联切入点和事务属性 -->
+		<aop:advisor advice-ref="txAdvice"
+			pointcut-ref="allMethods" />
+	</aop:config>
+</beans>

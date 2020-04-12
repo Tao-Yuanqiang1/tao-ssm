@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.rjxy.model.Cart">
+
+	<!-- 给购物车中添加商品 -->
+	<insert id="add" parameterType="com.rjxy.model.Cart">
+		insert into
+			t_cart
+		(
+			product_quantity,
+			cart_datetime,
+			product_id,
+			user_id
+		)
+		values
+		(
+			#{quantity},
+			#{date},
+			#{product.id},
+			#{user.id}
+		)
+	</insert>
+	
+	<!-- 删除一个购物车 -->
+	<delete id="delete" parameterType="int">
+		delete from t_cart
+		where cart_id=#{id}
+	</delete>
+	
+	<!--根据用户id查询其在购物车中的商品数量 -->
+	<select id="loadByUserSize" parameterType="int" resultType="int">
+		select count(*)
+		from t_cart 
+		where user_id=#{user.id}
+	</select>
+	
+	<!-- 根据用户的id查询该用户在购物车中的全部商品信息(包括图片) -->
+	<select id="listByUser" parameterType="int" resultMap="cartMap">
+		select *
+		from t_cart c, t_product p, t_img i
+		where c.product_id=p.product_id and i.product_id=p.product_id and c.user_id=#{user.id}
+		order by c.cart_id desc
+	</select>
+	
+	<!-- 根据商品的id和用户的id查看购物车中有没有相同的商品 -->
+	<select id="listByProduct" parameterType="com.rjxy.model.Cart" resultMap="cartMap">
+		select *
+		from t_cart
+		where product_id=#{product.id} and user_id=#{user.id} 
+	</select>
+
+	<!-- 更新购物车中的商品数量 -->
+	<update id="update" parameterType="com.rjxy.model.Cart">
+		update 
+			t_cart
+		set
+			product_quantity=#{quantity},
+			cart_datetime=#{date}
+		where
+			product_id=#{product.id}
+	</update>	
+	
+	<!-- 查询购物车中的一件商品 -->
+	<select id="load" parameterType="int" resultMap="cartMap">
+		select * from t_cart
+		where cart_id=#{id}
+	</select>
+	
+	<!-- 商品结算页面：查询该一件商品的图片、等等 -->
+	<select id="loadByBuy" parameterType="int" resultMap="cartMap">
+		select * from 
+			t_cart c,
+			t_product p,
+			t_img i
+		where 
+			cart_id=#{id}
+		and 
+			c.product_id=p.product_id
+		and
+			p.product_id=i.product_id
+	</select>
+		
+	<resultMap type="com.rjxy.model.Cart" id="cartMap">
+		<id property="id" column="cart_id" />
+		<result property="quantity" column="product_quantity" />
+		<result property="date" column="cart_date" />
+
+		<!-- 多对一关系,对产品 -->
+		<association property="product" column="product_id"
+			resultMap="productMap">
+		</association>
+
+		<!-- 多对一，对用户 -->
+		<association property="user" column="user_id"
+			resultMap="userMap">
+		</association>
+
+	</resultMap>
+
+	<resultMap type="com.rjxy.model.Product" id="productMap">
+		<id property="id" column="product_id" />
+		<result property="name" column="product_name" />
+		<result property="price" column="product_price" />
+		<result property="sales" column="product_sales" />
+		<result property="inventory" column="product_inventory" />
+		<result property="describe" column="product_describe" />
+		<result property="discount" column="product_discount" />
+		<result property="status" column="product_status" />
+		
+		<collection property="imgs" ofType="com.rjxy.model.Img">
+			<id property="id" column="img_id"/>
+			<result property="name" column="img_name"/>
+		</collection>
+	</resultMap>
+
+	<resultMap type="com.rjxy.model.User" id="userMap">
+		<id property="id" column="user_id" />
+		<result property="username" column="user_username" />
+		<result property="password" column="user_password" />
+		<result property="phone" column="user_phone" />
+		<result property="email" column="user_email" />
+		<result property="balance" column="user_balance" />
+	</resultMap>
+</mapper>

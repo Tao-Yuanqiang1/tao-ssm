@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.rjxy.model.Order">
+
+	<!-- 添加一个订单 -->
+	<insert id="add" parameterType="com.rjxy.model.Order">
+		<!-- 添加数据的时候立即返回主键 -->
+		<selectKey keyProperty="id" resultType="int" order="AFTER">
+			select LAST_INSERT_ID()
+		</selectKey>
+		insert into
+			t_order
+		(
+			order_price,
+			order_status,
+			order_isdel,
+			order_datetime,
+			address_id,
+			user_id
+		)
+		values
+		(
+			#{price},
+			#{status},
+			#{isdel},
+			#{date},
+			#{address.id},
+			#{user.id}
+		)
+	</insert>
+	
+	<!-- 删除一个订单 -->
+	<delete id="delete" parameterType="int">
+		delete from t_order
+		where order_id=#{id}
+	</delete>
+	
+	<!-- 更新一个订单的状态 -->
+	<update id="update" parameterType="com.rjxy.model.Order">
+		update t_order
+		set
+			order_status=#{status}
+		where
+			order_id=#{id}	
+	</update>
+	
+	<!-- 查询一个订单 -->
+	<select id="load" parameterType="int" resultMap="orderMap">
+	</select>
+	
+	<!-- 查询全部的订单-->
+	<select id="list" resultMap="orderMap">
+		select * from t_order
+	</select>
+	
+	<!-- 查询一个订单的详细信息（图片、商品） -->
+	<select id="loadAllOne" parameterType="int" resultMap="orderMap">
+		select * from
+			t_order o,
+			t_order_product op,
+			t_product p,
+			t_img i,
+			t_address a
+		where
+			o.order_id=#{id}
+		and 
+			o.order_id=op.order_id
+		and
+			p.product_id=op.product_id
+		and
+			p.product_id=i.product_id
+		and
+			a.address_id=o.address_id	
+	</select>
+	
+	<!-- 查询全部的订单，因为订单只有一个状态，状态为0即全部订单，所以状态为0要和1，2，3，4,5分开查 -->
+	<select id="listByStatus0" parameterType="int" resultMap="orderMap">
+		select * from
+			t_order o,
+			t_order_product op,
+			t_product p,
+			t_img i,
+			t_address a
+		where
+			o.user_id=#{user.id}
+		and 
+			o.order_id=op.order_id
+		and
+			p.product_id=op.product_id
+		and
+			p.product_id=i.product_id
+		and
+			a.address_id=o.address_id
+		order by o.order_id desc
+	</select>
+	
+	<!-- 查询不同状态的订单对应的订单1，2，3，4,5 -->
+	<select id="listByStatus" parameterType="com.rjxy.model.Order" resultMap="orderMap">
+		select * from
+			t_order o,
+			t_order_product op,
+			t_product p,
+			t_img i,
+			t_address a
+		where
+			o.order_status=#{status}
+		and
+			o.user_id=#{user.id}
+		and 
+			o.order_id=op.order_id
+		and
+			p.product_id=op.product_id
+		and
+			p.product_id=i.product_id
+		and
+			a.address_id=o.address_id
+		order by o.order_id desc
+	</select>
+	
+	<!-- 查询订单各个状态的数量 -->
+	<select id="listOrderBySize" parameterType="com.rjxy.model.Order" resultType="int">
+		select count(*)
+		from t_order
+		where user_id=#{user.id} and order_status=#{status}
+	</select>
+
+	<resultMap type="com.rjxy.model.Order" id="orderMap">
+		<id property="id" column="order_id"/>
+		<result property="price" column="order_price"/>
+		<result property="status" column="order_status"/>
+		<result property="isdel" column="order_isdel"/>
+		<result property="date" column="order_datetime"/>
+		<association property="address" column="address_id" javaType="com.rjxy.model.Address" resultMap="addressMap"></association>
+		<association property="user" column="user_id" javaType="com.rjxy.model.User" resultMap="userMap"></association>
+		<collection property="orderProducts" ofType="com.rjxy.model.OrderProduct">
+			<id property="id" column="order_product_id"/>
+			<result property="quantity" column="product_quantity"/>
+			<association property="product" column="product_id" javaType="com.rjxy.model.Product" resultMap="productMap"></association>
+		</collection>
+	</resultMap>
+	<resultMap type="com.rjxy.model.Address" id="addressMap">
+		<id property="id" column="address_id"/>
+		<result property="base" column="address_base"/>
+		<result property="place" column="address_place"/>
+		<result property="name" column="address_name"/>
+		<result property="phone" column="address_phone"/>
+	</resultMap>
+	<resultMap type="com.rjxy.model.User" id="userMap">
+		<id property="id" column="user_id"/>
+		<result property="username" column="user_username"/>
+		<result property="password" column="user_password"/>
+		<result property="phone" column="user_phone"/>
+		<result property="email" column="user_email"/>
+		<result property="balance" column="user_balance"/>
+	</resultMap>
+	<resultMap type="com.rjxy.model.Product" id="productMap">
+		<id property="id" column="product_id"/>
+		<result property="name" column="product_name"/>
+		<result property="price" column="product_price"/>
+		<result property="sales" column="product_sales"/>
+		<result property="inventory" column="product_inventory"/>
+		<result property="describe" column="product_describe"/>
+		<result property="discount" column="product_discount"/>
+		<result property="status" column="product_status"/>
+		<collection property="imgs" ofType="com.rjxy.model.Img">
+			<id property="id" column="img_id"/>
+			<result property="name" column="img_name"/>
+		</collection>
+	</resultMap>
+</mapper>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.rjxy.model.Category">
+
+	<!-- 添加一个商品类别 -->
+	<insert id="add" parameterType="com.rjxy.model.Category">
+		insert into
+			t_category
+		(
+			category_name,
+			category_describe
+		)
+		values
+		(
+			#{name},
+			#{describe}
+		)
+	</insert>
+	
+	<!-- 删除一个商品类别 -->
+	<delete id="delete" parameterType="int">
+		delete from t_category
+		where category_id=#{id}
+	</delete>
+	
+	<!-- 更新一个商品类别 -->
+	<update id="update" parameterType="com.rjxy.model.Category">
+		update 
+			t_category
+		set
+			category_name=#{name},
+			category_describe=#{describe}
+		where
+			category_id=#{id}
+	</update>
+	
+	<!-- 查询一个商品类别 -->
+	<select id="load" parameterType="int" resultMap="categoryMap">
+		select * from t_category
+		where category_id=#{id}
+	</select>
+	
+	<!-- 查询全部的商品类别 -->
+	<select id="list" resultMap="categoryMap">
+		select * from t_category
+	</select>
+ 
+	<!-- 类中属性与数据库表字段的映射关系 --> 
+	<resultMap type="com.rjxy.model.Category" id="categoryMap">
+		<id property="id" column="category_id" />
+		<result property="name" column="category_name" />
+		<result property="describe" column="category_describe" />
+		
+		<!-- 组织一对多关系 -->
+		<collection property="products"
+			ofType="com.rjxy.model.Product">
+			<id property="id" column="product_id" />
+			<result property="name" column="product_name" />
+			<result property="price" column="product_price" />
+			<result property="sales" column="product_sales" />
+			<result property="inventory" column="product_inventory" />
+			<result property="describe" column="product_describe" />
+			<result property="discount" column="product_discount" />
+			<result property="status" column="product_status" />
+		</collection>
+		
+	</resultMap>
+
+</mapper>
